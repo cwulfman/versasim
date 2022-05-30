@@ -3,6 +3,10 @@
 from datetime import datetime
 from pyairtable import Base, Table
 
+BASE_ID =  "appTNDM2DwCS2vYun"
+API_KEY = "keyuXobQvG2xmGv1q"
+
+
 def language_string(content, language="en"):
     return {"@type": "ElectionResults.LanguageString",
             "Content": content,
@@ -29,6 +33,15 @@ def election(record):
             "ElectionScopeId": fields['ElectionScope'],
             "Name": internationalized_text(fields['Name'])
             }
+    
+    return data
+
+def ballot_style(record):
+    fields = record['fields']
+    data = {"@type": 'ElectionResults.BallotStyle',
+            "@id": record['id'],
+            "GpUnitIds": fields['GpUnits']
+            }
     return data    
 
 
@@ -36,15 +49,28 @@ class ElectionReporter:
     def __init__(self, base_id, api_key):
         self._base_id = base_id
         self._api_key = api_key
-        self._base = Base(self._api_key, self._base_id)
+        self._base = None
         self._election_table = None
+        self._ballotstyle_table = None
         self.election_reports = []
+
+    @property
+    def base(self):
+        if not self._base:
+            self._base = Base(self._api_key, self._base_id)
+        return self._base
 
     @property
     def election_table(self):
         if not self._election_table:
-            self._election_table = self._base.get_table("Election")
+            self._election_table = self.base.get_table("Election")
         return self._election_table
+
+    @property
+    def ballotstyle_table(self):
+        if not self._ballotstyle_table:
+            self._ballotstyle_table = self.base.get_table('BallotStyle')
+        return self._ballotstyle_table
 
     @property
     def elections(self):
@@ -66,5 +92,12 @@ class ElectionReporter:
             "SequenceEnd": 1
         }
         election_record = self.election_table.get(election_id)
+        ballot_styles = [ballot_style(self.ballotstyle_table.get(id))
+                                for id
+                                in election_record['fields']['BallotStyle']]
+        election_record['BallotStyle'] = ballot_styles
+
+             
         report['Election'] = [election(election_record)]
         return report
+        
