@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "versasim"
+version = "0.1.0"
+description = "airtable-based tool for managing EDFs"
+authors = ["Cliff Wulfman <cliff@osetinstitute.org>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pyairtable = "^1.1.0"
+fastapi = "^0.78.0"
+uvicorn = "^0.17.6"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.1.2"
+pytest-black = "^0.3.12"
+pylint = "^2.13.9"
+flake8 = "^4.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
