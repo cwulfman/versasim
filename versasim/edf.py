@@ -60,7 +60,9 @@ class GpUnit(Edf):
         self.Label = self.record['Label']
         self.Name = self.record['Name']
         self.Type = self.record['Type']
-        self.ComposingGpUnits = self.record['ComposingGpUnits']
+        self.ComposingGpUnits = []
+        if 'ComposingGpUnits' in self.record:
+            self.ComposingGpUnits = [GpUnit(base, c_id) for c_id in self.record['ComposingGpUnits']]
 
 
 class Party(Edf):
@@ -77,7 +79,9 @@ class Office(Edf):
                          'ElectionResults.Office')
         self.Name = self.record['Name']
         self.IsPartisan = self.record['IsPartisan']
-        self.ElectionDistrict = self.record['ElectionDistrict']
+        self.ElectionDistrict = None
+        if 'ElectionDistrict' in self.record:
+            self.ElectionDistrict = GpUnit(base, self.record['ElectionDistrict'][0])
 
 class Person(Edf):
     def __init__(self, base, identifier):

@@ -73,7 +73,8 @@ def test_gp_unit(gadget_county):
     assert gadget_county.Label == "Gadget"
     assert gadget_county.Name == "Gadget County"
     assert gadget_county.Type == "county"
-    assert identifiers['orbit_city'] in gadget_county.ComposingGpUnits
+    gpu_ids = [gpu.id for gpu in gadget_county.ComposingGpUnits]
+    assert identifiers['orbit_city'] in gpu_ids
 
 def test_party(party):
     assert party.Label == "Hadronicrat"
@@ -83,7 +84,7 @@ def test_party(party):
 def test_office(office):
     assert office.Name == "Mayor"
     assert office.IsPartisan == True
-    assert test_election_district_id in office.ElectionDistrict
+    assert identifiers['orbit_city'] == office.ElectionDistrict.id
 
 def test_person(person):
     assert person.LastName == 'Jetson'
