@@ -53,27 +53,58 @@ class Edf():
         self.record = base.get(table, id)['fields']
 
 
-class CandidateSelection():
-    def __init__(self, base, id):
-        super().__init__(base, id, 'Candidate',
+class GpUnit(Edf):
+    def __init__(self, base, identifier):
+        super().__init__(base, identifier, 'GpUnit',
+                         'ElectionResults.RecordingUnit')
+        self.Label = self.record['Label']
+        self.Name = self.record['Name']
+        self.Type = self.record['Type']
+
+
+class Party(Edf):
+    def __init__(self, base, identifier):
+        super().__init__(base, identifier, 'Party',
+                         'ElectionResults.Party')
+        self.Label = self.record['Label']
+        self.Name = self.record['Name']
+        self.Abbreviation = self.record['Abbreviation']
+
+
+
+
+class Candidate(Edf):
+    def __init__(self, base, identifier):
+        super().__init__(base, identifier, 'Candidate',
+                         'ElectionResults.Candidate')
+        self.BallotName = self.record['BallotName']
+
+
+
+class CandidateSelection(Edf):
+    def __init__(self, base, identifier):
+        super().__init__(base, identifier, 'Candidate',
                          'ElectionResults.CandidateSelection')
-        
+
+    def as_dict(self):
+        pass
+
 
 class CandidateContest(Edf):
     def __init__(self, base, id):
         super().__init__(base, id, 'CandidateContest',
                          'ElectionResults.OrderedContest')
-
-    @property
-    def candidate_selections(self):
-        [CandidateSelection(self.base, id)
-         for id
-         in self.record['CandidateSelections']]
+        ContestSelection = [CandidateSelection(self.base, id)
+                                for id
+                                in self.record['CandidateSelections']]
+        Name = self.record['Name']
 
     def as_dict(self):
         data = {"@type": self.type,
                 "ContestId": self.id,
-                "OrderedContestSelectionIds": [selection.id for selection in self.candidate_selections]
+                "OrderedContestSelectionIds": [selection.id
+                                               for selection
+                                               in self.candidate_selections]
                 }
         return data
 
@@ -107,6 +138,30 @@ class BallotStyle(Edf):
                 "OrderedContests": self.OrderedContests }
         return data
 
+
+class Election(Edf):
+    def __init__(self, base, id):
+        super().__init__(base, id, "Election", "ElectionResults.Election")
+        candidate_contests = [CandidateContest(base, id) for id in self.record['CandidateContest']]
+        ballot_measure_contests = [BallotMeasure(base, id)
+                                        for id in self.record['BallotMeasure']]
+        self.contest = candidate_contests + ballot_measure_contests
+        self.ballot_style = [BallotStyle(base, id) for id in self.record['BallotStyle']]
+        self.name =  internationalized_text(self.record['Name'])
+
+        
+
+    def as_dict(self):
+        c_contests = [c.as_dict() for c in self.candidate_contests]
+        b_contests = [b.as_dict() for b in self.ballot_measure_contests]
+        data = {"@type": self.type,
+                "@id": self.id,
+                "Name": self.name,
+                "Contest": [c.as_dict() for c in self.contest],
+                "BallotStyle": [b.as_dict() for b in self.ballot_style]
+                }
+        
+        return data
 
 class ElectionReporter:
     def __init__(self, base_id, api_key):
