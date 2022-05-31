@@ -62,7 +62,9 @@ class GpUnit(Edf):
         self.Type = self.record['Type']
         self.ComposingGpUnits = []
         if 'ComposingGpUnits' in self.record:
-            self.ComposingGpUnits = [GpUnit(base, c_id) for c_id in self.record['ComposingGpUnits']]
+            self.ComposingGpUnits = [GpUnit(base, c_id)
+                                     for c_id
+                                     in self.record['ComposingGpUnits']]
 
 
 class Party(Edf):
@@ -73,6 +75,7 @@ class Party(Edf):
         self.Name = self.record['Name']
         self.Abbreviation = self.record['Abbreviation']
 
+
 class Office(Edf):
     def __init__(self, base, identifier):
         super().__init__(base, identifier, 'Office',
@@ -81,7 +84,9 @@ class Office(Edf):
         self.IsPartisan = self.record['IsPartisan']
         self.ElectionDistrict = None
         if 'ElectionDistrict' in self.record:
-            self.ElectionDistrict = GpUnit(base, self.record['ElectionDistrict'][0])
+            self.ElectionDistrict = GpUnit(base,
+                                           self.record['ElectionDistrict'][0])
+
 
 class Person(Edf):
     def __init__(self, base, identifier):
@@ -92,19 +97,24 @@ class Person(Edf):
         self.Profession = self.record['Profession']
 
 
-
-
 class Candidate(Edf):
     def __init__(self, base, identifier):
         super().__init__(base, identifier, 'Candidate',
                          'ElectionResults.Candidate')
         self.BallotName = self.record['BallotName']
 
+        self.Person = None
+        if 'Person' in self.record:
+            self.Person = Person(base, self.record['Person'][0])
+
+        self.Party = None
+        if 'Party' in self.record:
+            self.Party = Party(base, self.record['Party'][0])
 
 
 class CandidateSelection(Edf):
     def __init__(self, base, identifier):
-        super().__init__(base, identifier, 'Candidate',
+        super().__init__(base, identifier, 'CandidateSelections',
                          'ElectionResults.CandidateSelection')
 
     def as_dict(self):
@@ -115,11 +125,16 @@ class CandidateContest(Edf):
     def __init__(self, base, id):
         super().__init__(base, id, 'CandidateContest',
                          'ElectionResults.OrderedContest')
-        self.ContestSelection = [CandidateSelection(self.base, id)
-                                for id
-                                in self.record['CandidateSelections']]
         self.Name = self.record['Name']
         self.VoteVariation = self.record['VoteVariation']
+        self.VotesAllowed = self.record['VotesAllowed']
+        self.ElectionDistrict = GpUnit(base, self.record['ElectionDistrict'][0])
+
+        self.ContestSelection = []
+        if 'ContestSelections' in self.record:
+            self.ContestSelection = [CandidateSelection(self.base, candidate_id)
+                                     for candidate_id
+                                     in self.record['ContestSelections']]
 
     def as_dict(self):
         data = {"@type": self.type,

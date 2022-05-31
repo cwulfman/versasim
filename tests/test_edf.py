@@ -19,7 +19,9 @@ test_ballot_style_id = 'rec2vgozeUpYdIwac'
 identifiers = { 'farallon': 'rec5K8APzm54h7Vnj',
                 'gadget_county': 'recKCyQwhLDHp1cBD',
                 'orbit_city': 'recbrO0CGN0P0C1mC',
-                'hadron_party': 'recg6kdFZ9iBvR2nF'
+                'hadron_party': 'recg6kdFZ9iBvR2nF',
+                'mayor': 'rec3uGFZUkRJjaxk0',
+                'select_spacely': 'recPrSqz8XFt2Zbei'
                }
 
 # fixtures
@@ -42,6 +44,10 @@ def party(base):
 @pytest.fixture
 def office(base):
     return edf.Office(base, test_office_id)
+
+@pytest.fixture
+def mayor(base):
+    return edf.Office(base, identifiers['mayor'])
 
 @pytest.fixture
 def person(base):
@@ -81,10 +87,10 @@ def test_party(party):
     assert party.Name == "The Hadron Party of Farallon"
     assert party.Abbreviation == "HAD"
 
-def test_office(office):
-    assert office.Name == "Mayor"
-    assert office.IsPartisan == True
-    assert identifiers['orbit_city'] == office.ElectionDistrict.id
+def test_office(mayor):
+    assert mayor.Name == "Mayor"
+    assert mayor.IsPartisan == True
+    assert identifiers['orbit_city'] == mayor.ElectionDistrict.id
 
 def test_person(person):
     assert person.LastName == 'Jetson'
@@ -97,7 +103,9 @@ def test_candidate(candidate):
 def test_candidate_contest(candidate_contest):
     assert candidate_contest.Name == 'Contest for Mayor of Orbit City'
     assert candidate_contest.VoteVariation == 'plurality'
-
+    assert candidate_contest.ElectionDistrict.id == identifiers['orbit_city']
+    assert identifiers['select_spacely'] in [c.id for c in candidate_contest.ContestSelection]
+    
 def test_ballot_measure(ballot_measure):
     assert ballot_measure.Name == 'Air Traffic Control Tax Increase'
     assert ballot_measure.FullText == 'Shall Gadget County increase its sales tax from 1% to 1.1% for the purpose of raising additional revenue to fund expanded air traffic control operations?'
