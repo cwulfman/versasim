@@ -110,10 +110,11 @@ class CandidateContest(Edf):
     def __init__(self, base, id):
         super().__init__(base, id, 'CandidateContest',
                          'ElectionResults.OrderedContest')
-        ContestSelection = [CandidateSelection(self.base, id)
+        self.ContestSelection = [CandidateSelection(self.base, id)
                                 for id
                                 in self.record['CandidateSelections']]
-        Name = self.record['Name']
+        self.Name = self.record['Name']
+        self.VoteVariation = self.record['VoteVariation']
 
     def as_dict(self):
         data = {"@type": self.type,
@@ -128,13 +129,17 @@ class BallotMeasure(Edf):
     def __init__(self, base, id):
         super().__init__(base, id, 'BallotMeasure',
                          'ElectionResults.OrderedContest')
+        self.Name = self.record['Name']
+        self.FullText = self.record['FullText']
 
 
 class BallotStyle(Edf):
     def __init__(self, base, id):
         super().__init__(base, id, 'BallotStyle', 'ElectionResults.BallotStyle')
-        contest_ids = self.record['Contests']
-        self.candidate_contests = [CandidateContest(base, id) for id in contest_ids]
+
+        self.Name = self.record['Name']
+        self.candidate_contests = [CandidateContest(base, id)
+                                   for id in self.record['Contests']]
         self.ballot_measure_contests = [BallotMeasure(base, id)
                                         for id in self.record['BallotMeasures']]
 
@@ -161,9 +166,13 @@ class Election(Edf):
         candidate_contests = [CandidateContest(base, id) for id in self.record['CandidateContest']]
         ballot_measure_contests = [BallotMeasure(base, id)
                                         for id in self.record['BallotMeasure']]
-        self.contest = candidate_contests + ballot_measure_contests
-        self.ballot_style = [BallotStyle(base, id) for id in self.record['BallotStyle']]
-        self.name =  internationalized_text(self.record['Name'])
+        self.Contest = candidate_contests + ballot_measure_contests
+        self.BallotStyle = [BallotStyle(base, id) for id in self.record['BallotStyle']]
+        self.Name = self.record['Name']
+        self.StartDate = self.record['StartDate']
+        self.EndDate = self.record['EndDate']
+        self.Type = self.record['Type']
+        
 
         
 
