@@ -85,6 +85,14 @@ class Party(Edf):
         self.Name = self.record['Name']
         self.Abbreviation = self.record['Abbreviation']
 
+    def as_dict(self):
+        data = {"@type": self.type,
+                "@id": self.id,
+                "Name": internationalized_text(self.Name, self.Label)
+                }
+        return data
+
+
 
 class Office(Edf):
     def __init__(self, base, identifier):
