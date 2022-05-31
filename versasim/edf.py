@@ -60,6 +60,7 @@ class GpUnit(Edf):
         self.Label = self.record['Label']
         self.Name = self.record['Name']
         self.Type = self.record['Type']
+        self.ComposingGpUnits = self.record['ComposingGpUnits']
 
 
 class Party(Edf):

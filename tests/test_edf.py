@@ -16,14 +16,20 @@ test_ballot_measure_id = 'recmwQAoKWid0DfqC'
 test_gp_unit_id = 'recKCyQwhLDHp1cBD'
 test_ballot_style_id = 'rec2vgozeUpYdIwac'
 
+identifiers = { 'farallon': 'rec5K8APzm54h7Vnj',
+                'gadget_county': 'recKCyQwhLDHp1cBD',
+                'orbit_city': 'recbrO0CGN0P0C1mC',
+                'hadron_party': 'recg6kdFZ9iBvR2nF'
+               }
+
 # fixtures
 @pytest.fixture
 def base():
     return Base(API_KEY, BASE_ID)
 
 @pytest.fixture
-def gp_unit(base):
-    return edf.GpUnit(base, test_gp_unit_id)
+def gadget_county(base):
+    return edf.GpUnit(base, identifiers['gadget_county'])
 
 @pytest.fixture
 def candidate(base):
@@ -63,10 +69,11 @@ def election(base):
 
 
 # tests
-def test_gp_unit(gp_unit):
-    assert gp_unit.Label == "Gadget"
-    assert gp_unit.Name == "Gadget County"
-    assert gp_unit.Type == "county"
+def test_gp_unit(gadget_county):
+    assert gadget_county.Label == "Gadget"
+    assert gadget_county.Name == "Gadget County"
+    assert gadget_county.Type == "county"
+    assert identifiers['orbit_city'] in gadget_county.ComposingGpUnits
 
 def test_party(party):
     assert party.Label == "Hadronicrat"
