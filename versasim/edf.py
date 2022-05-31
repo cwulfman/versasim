@@ -7,11 +7,13 @@ BASE_ID =  "appTNDM2DwCS2vYun"
 API_KEY = "keyuXobQvG2xmGv1q"
 
 
-def language_string(content, label, language="en"):
-    return {"@type": "ElectionResults.LanguageString",
+def language_string(content, label='', language="en"):
+    lstring ={"@type": "ElectionResults.LanguageString",
             "Content": content,
-            "Label": label,
             "Language": language}
+    if label:
+        lstring['Label'] = label
+    return lstring
 
 def internationalized_text(content, label='', language="en"):
     return {"@type": "ElectionResults.InternationalizedText",
@@ -113,6 +115,14 @@ class Person(Edf):
         self.FirstName = self.record['FirstName']
         self.Profession = self.record['Profession']
 
+    def as_dict(self):
+        data = {"@type": self.type,
+                "@id": self.id,
+                "FirstName": self.FirstName,
+                "LastName": self.LastName,
+                "Profession": internationalized_text(self.Profession)
+        }
+        return data
 
 class Candidate(Edf):
     def __init__(self, base, identifier):
