@@ -70,6 +70,22 @@ class Party(Edf):
         self.Name = self.record['Name']
         self.Abbreviation = self.record['Abbreviation']
 
+class Office(Edf):
+    def __init__(self, base, identifier):
+        super().__init__(base, identifier, 'Office',
+                         'ElectionResults.Office')
+        self.Name = self.record['Name']
+        self.IsPartisan = self.record['IsPartisan']
+        self.ElectionDistrict = self.record['ElectionDistrict']
+
+class Person(Edf):
+    def __init__(self, base, identifier):
+        super().__init__(base, identifier, 'Person',
+                         'ElectionResults.Person')
+        self.LastName = self.record['LastName']
+        self.FirstName = self.record['FirstName']
+        self.Profession = self.record['Profession']
+
 
 
 
