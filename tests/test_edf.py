@@ -88,7 +88,8 @@ def test_party(party):
     assert party.Abbreviation == "HAD"
 
 def test_office(mayor):
-    assert mayor.Name == "Mayor"
+    assert mayor.Label == "Mayor"
+    assert mayor.Name == "Mayor of Orbit City"
     assert mayor.IsPartisan == True
     assert identifiers['orbit_city'] == mayor.ElectionDistrict.id
 

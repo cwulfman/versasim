@@ -7,14 +7,15 @@ BASE_ID =  "appTNDM2DwCS2vYun"
 API_KEY = "keyuXobQvG2xmGv1q"
 
 
-def language_string(content, language="en"):
+def language_string(content, label, language="en"):
     return {"@type": "ElectionResults.LanguageString",
             "Content": content,
+            "Label": label,
             "Language": language}
 
-def internationalized_text(content, language="en"):
+def internationalized_text(content, label='', language="en"):
     return {"@type": "ElectionResults.InternationalizedText",
-            "Text": language_string(content, language)}
+            "Text": [language_string(content, label, language)]}
 
 
 def gp_unit(record):
@@ -56,7 +57,7 @@ class Edf():
 class GpUnit(Edf):
     def __init__(self, base, identifier):
         super().__init__(base, identifier, 'GpUnit',
-                         'ElectionResults.RecordingUnit')
+                         'ElectionResults.ReportingUnit')
         self.Label = self.record['Label']
         self.Name = self.record['Name']
         self.Type = self.record['Type']
@@ -66,6 +67,13 @@ class GpUnit(Edf):
                                      for c_id
                                      in self.record['ComposingGpUnits']]
 
+    def as_dict(self):
+        data = {"@type": self.type,
+                "@id": self.id,
+                "Type": self.Type,
+                "Name": internationalized_text(self.Name, self.Label)
+                }
+        return data
 
 class Party(Edf):
     def __init__(self, base, identifier):
@@ -81,11 +89,20 @@ class Office(Edf):
         super().__init__(base, identifier, 'Office',
                          'ElectionResults.Office')
         self.Name = self.record['Name']
+        self.Label = self.record['Label']
         self.IsPartisan = self.record['IsPartisan']
         self.ElectionDistrict = None
         if 'ElectionDistrict' in self.record:
             self.ElectionDistrict = GpUnit(base,
                                            self.record['ElectionDistrict'][0])
+
+    def as_dict(self):
+        data = {"@type": self.type,
+                "@id": self.id,
+                "IsPartisan": True,
+                "Name": internationalized_text(self.Name, self.Label)
+                }
+        return data
 
 
 class Person(Edf):
