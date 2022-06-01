@@ -162,45 +162,65 @@ class CandidateSelection(Edf):
                          'ElectionResults.CandidateSelection')
         self.CandidateIds = self.record['Candidates']
         self.Label = self.record['Label']
+        if 'IsWriteIn' in self.record:
+            self.IsWriteIn = self.record['IsWriteIn']
+        else:
+            self.IsWriteIn = False
 
     def as_dict(self):
         data = {"@type": self.type,
-                "@id": self.id,
-                "CandidateIds": self.CandidateIds
-        }
+                "@id": self.id
+                }
+        if self.IsWriteIn:
+            data["IsWriteIn"] = True
+        else:
+            data["CandidateIds"] = self.CandidateIds
+
         return data
 
 
-
-class CandidateContest(Edf):
-    def __init__(self, base, id):
-        super().__init__(base, id, 'CandidateContest',
-                         'ElectionResults.OrderedContest')
+class Contest(Edf):
+    def __init__(self, base, id, table, type):
+        super().__init__(base, id, table, type)
+        self.Abbreviation = None
+        self.BallotSubTitle = None
+        self.BallotTitle = None
+        self.ContestSelection = []
+        self.ElectionDistrict = GpUnit(base, self.record['ElectionDistrict'][0])
         self.Name = self.record['Name']
         self.VoteVariation = self.record['VoteVariation']
-        self.VotesAllowed = self.record['VotesAllowed']
-        self.ElectionDistrict = GpUnit(base, self.record['ElectionDistrict'][0])
-
         self.ContestSelection = []
+
+class CandidateContest(Contest):
+    def __init__(self, base, id):
+        super().__init__(base, id, 'CandidateContest',
+                         'ElectionResults.CandidateContest')
+        self.VotesAllowed = self.record['VotesAllowed']
+        self.Office = self.record['Office']
+
         if 'ContestSelections' in self.record:
-            self.ContestSelection = [CandidateSelection(self.base, candidate_id)
-                                     for candidate_id
+            self.ContestSelection = [CandidateSelection(self.base, selection_id)
+                                     for selection_id
                                      in self.record['ContestSelections']]
 
     def as_dict(self):
         data = {"@type": self.type,
-                "ContestId": self.id,
-                "OrderedContestSelectionIds": [selection.id
-                                               for selection
-                                               in self.candidate_selections]
+                "@id": self.id,
+                "Name": self.Name,
+                "OfficeIds": self.Office,
+                "VoteVariation": self.VoteVariation,
+                "VotesAllowed": self.VotesAllowed,
+                "ElectionDistrictId": self.ElectionDistrict.id,
+                "ContestSelection": [selection.as_dict()
+                                     for selection
+                                     in self.ContestSelection]
                 }
         return data
 
-class BallotMeasure(Edf):
+class BallotMeasure(Contest):
     def __init__(self, base, id):
         super().__init__(base, id, 'BallotMeasure',
                          'ElectionResults.OrderedContest')
-        self.Name = self.record['Name']
         self.FullText = self.record['FullText']
 
 

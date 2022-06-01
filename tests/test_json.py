@@ -21,12 +21,15 @@ identifiers = { 'farallon': 'rec5K8APzm54h7Vnj',
                 'gadget_county': 'recKCyQwhLDHp1cBD',
                 'orbit_city': 'recbrO0CGN0P0C1mC',
                 'hadron_party': 'recg6kdFZ9iBvR2nF',
-                'mayor': 'rec3uGFZUkRJjaxk0',
+                'office_mayor': 'rec3uGFZUkRJjaxk0',
                 'person_spacely': "recz2KGAdSdAzwgRq",
                 'party_hadronicrat': 'recg6kdFZ9iBvR2nF',
                 'party_leptonican': 'recxZqCzvl2XEKHYy',
                 'candidate_selection_spacely': 'recPrSqz8XFt2Zbei',
-                'candidate_spacely': 'recGLBFPaB3zMDGem'
+                'candidate_spacely': 'recGLBFPaB3zMDGem',
+                'candidate_cogswell': 'rec9I3CAGByPKmNef',
+                'candidate_selection_cogswell': 'recGkMGp1IBfWi6vy',
+                'candidate_contest_mayor': 'recE0Oha5OnxNLFv4'
                }
 
 dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
@@ -40,7 +43,7 @@ dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
                                    "Language": "en"}]
                        }
                       },
-         'mayor': { "@type": "ElectionResults.Office",
+         'office_mayor': { "@type": "ElectionResults.Office",
                 "@id": "rec3uGFZUkRJjaxk0",
                     "IsPartisan": True,
                     "Name": {
@@ -103,7 +106,33 @@ dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
          'candidate_selection_spacely': { "@type": "ElectionResults.CandidateSelection",
                                           "@id": "recPrSqz8XFt2Zbei",
                                           "CandidateIds": ["recGLBFPaB3zMDGem"]
-                                         }
+                                         },
+         'candidate_contest_mayor':  {
+                    "OfficeIds": ['rec3uGFZUkRJjaxk0'],
+                    "VotesAllowed": 1,
+                    "@type": "ElectionResults.CandidateContest",
+                    "@id": "recE0Oha5OnxNLFv4",
+                    "ContestSelection": [
+                        {
+                            "CandidateIds": ['recGLBFPaB3zMDGem'],
+                            "@type": "ElectionResults.CandidateSelection",
+                            "@id": "recPrSqz8XFt2Zbei"
+                        },
+                        {
+                            "CandidateIds": ['rec9I3CAGByPKmNef'],
+                            "@type": "ElectionResults.CandidateSelection",
+                            "@id": "recGkMGp1IBfWi6vy"
+                        },
+                        {
+                            "IsWriteIn": True,
+                            "@type": "ElectionResults.CandidateSelection",
+                            "@id": 'recm7Iu8kuvUyNLjd'
+                        }
+                    ],
+                    "ElectionDistrictId": "recbrO0CGN0P0C1mC",
+                    "Name": "Contest for Mayor of Orbit City",
+                    "VoteVariation": "plurality"
+                }
          }
 
 # fixtures
@@ -144,8 +173,8 @@ def office(base):
     return edf.Office(base, test_office_id)
 
 @pytest.fixture
-def mayor(base):
-    return edf.Office(base, identifiers['mayor'])
+def office_mayor(base):
+    return edf.Office(base, identifiers['office_mayor'])
 
 @pytest.fixture
 def person(base):
@@ -172,12 +201,16 @@ def ballot_style(base):
 def election(base):
     return edf.Election(base, test_election_id)
 
+@pytest.fixture
+def candidate_contest_mayor(base):
+    return edf.CandidateContest(base, identifiers['candidate_contest_mayor'])
+
 # tests
 def test_gp_unit(farallon):
     assert farallon.as_dict() == dicts['farallon']
 
-def test_office(mayor):
-    assert mayor.as_dict() == dicts['mayor']
+def test_office(office_mayor):
+    assert office_mayor.as_dict() == dicts['office_mayor']
 
 def test_person(person_spacely):
     assert person_spacely.as_dict() == dicts['person_spacely']
@@ -190,4 +223,7 @@ def test_candidate(candidate_spacely):
 
 def test_candidate_selection(candidate_selection_spacely):
     assert candidate_selection_spacely.as_dict() == dicts['candidate_selection_spacely']
+
+def test_candidate_contest(candidate_contest_mayor):
+    assert candidate_contest_mayor.as_dict() == dicts['candidate_contest_mayor']
 
