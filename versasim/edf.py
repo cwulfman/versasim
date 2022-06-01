@@ -7,45 +7,49 @@ BASE_ID =  "appTNDM2DwCS2vYun"
 API_KEY = "keyuXobQvG2xmGv1q"
 
 
-def language_string(content, label='', language="en"):
-    lstring ={"@type": "ElectionResults.LanguageString",
+def language_string(content, language="en"):
+    """returns a dictionary-model of a LanguageString"""
+    return {"@type": "ElectionResults.LanguageString",
             "Content": content,
             "Language": language}
-    if label:
-        lstring['Label'] = label
-    return lstring
 
 def internationalized_text(content, label='', language="en"):
-    return {"@type": "ElectionResults.InternationalizedText",
-            "Text": [language_string(content, label, language)]}
+    """returns a dictionary-model of an InternationalizedText"""
+
+    data = {"@type": "ElectionResults.InternationalizedText",
+            "Text": [language_string(content, language)]}
+    if label:
+        data['Label'] = label
+
+    return data
 
 
-def gp_unit(record):
-    fields = record['fields']
-    return {"@type": "ElectionResults.ReportingUnit",
-            "@id": record['id'],
-            "Name": internationalized_text(fields['Name'])}
+# def gp_unit(record):
+#     fields = record['fields']
+#     return {"@type": "ElectionResults.ReportingUnit",
+#             "@id": record['id'],
+#             "Name": internationalized_text(fields['Name'])}
 
-def election(record):
-    fields = record['fields']
-    data = {"@type": "ElectionResults.Election",
-            "@id": record['id'],
-            "Type": fields['Type'],
-            "StartDate": fields['StartDate'],
-            "EndDate": fields['EndDate'],
-            "ElectionScopeId": fields['ElectionScope'],
-            "Name": internationalized_text(fields['Name'])
-            }
+# def election(record):
+#     fields = record['fields']
+#     data = {"@type": "ElectionResults.Election",
+#             "@id": record['id'],
+#             "Type": fields['Type'],
+#             "StartDate": fields['StartDate'],
+#             "EndDate": fields['EndDate'],
+#             "ElectionScopeId": fields['ElectionScope'],
+#             "Name": internationalized_text(fields['Name'])
+#             }
     
-    return data
+#     return data
 
-def ballot_style(record):
-    fields = record['fields']
-    data = {"@type": 'ElectionResults.BallotStyle',
-            "@id": record['id'],
-            "GpUnitIds": fields['GpUnits']
-            }
-    return data
+# def ballot_style(record):
+#     fields = record['fields']
+#     data = {"@type": 'ElectionResults.BallotStyle',
+#             "@id": record['id'],
+#             "GpUnitIds": fields['GpUnits']
+#             }
+#     return data
 
 
 class Edf():
@@ -274,12 +278,12 @@ class OrderedContest(Edf):
 class BallotStyle(Edf):
     def __init__(self, base, id):
         super().__init__(base, id, 'BallotStyle', 'ElectionResults.BallotStyle')
-        self.contests = []
+        self._contests = []
         if 'Contests' in self.record:
-            self.contests += [CandidateContest(base, id)
+            self._contests += [CandidateContest(base, id)
                               for id in self.record['Contests']]
         if 'BallotMeasures' in self.record:
-            self.contests += [BallotMeasure(base, id)
+            self._contests += [BallotMeasure(base, id)
                               for id in self.record['BallotMeasures']]
         
 
@@ -289,14 +293,12 @@ class BallotStyle(Edf):
 
     @property
     def OrderedContests(self):
-        value = [OrderedContest(contest) for contest in self.contests]
+        return [OrderedContest(contest) for contest in self._contests]
 
     def as_dict(self):
         data = {"@type": self.type,
-                "@id": self.id,
-                "Name": self.name,
                 "GpUnitIds": self.record['GpUnits'],
-                "OrderedContests": self.OrderedContests }
+                "OrderedContent": [c.as_dict() for c in self.OrderedContests]}
         return data
 
 
@@ -312,12 +314,15 @@ class Election(Edf):
         self.StartDate = self.record['StartDate']
         self.EndDate = self.record['EndDate']
         self.Type = self.record['Type']
-        
+        self.ElectionScopeId = self.record['ElectionScope'][0]
 
     def as_dict(self):
         data = {"@type": self.type,
-                "@id": self.id,
-                "Name": self.Name,
+                "ElectionScopeId": self.ElectionScopeId,
+                "StartDate": self.StartDate,
+                "EndDate": self.EndDate,
+                "Type": self.Type,
+                "Name": internationalized_text(self.Name),
                 "Contest": [c.as_dict() for c in self.Contest],
                 "BallotStyle": [b.as_dict() for b in self.BallotStyle]
                 }
@@ -328,9 +333,13 @@ class ElectionReport(Edf):
     def __init__(self, base):
         self.type = "ElectionResults.ElectionReport"
         self.base = base
+        self._Party = []
+        self._GpUnit = []
 
     def record_ids(self, table_name):
         return [r['id'] for r in self.base.get_table(table_name).all()]
+
+    
 
     def generate_report(self):
                 report = {"@type": "ElectionResults.ElectionReport",
@@ -339,6 +348,7 @@ class ElectionReport(Edf):
                           "VendorApplicationId": "ElectionReporter",
                           "Issuer": "TrustTheVote",
                           "IssuerAbbreviation": "TTV",
+                          "Status": "pre-election",
                           "SequenceStart": 1,
                           "SequenceEnd": 1}
                 report['Party'] = [Party(self.base, id).as_dict() for id in self.record_ids('Party')]
