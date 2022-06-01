@@ -11,7 +11,7 @@ test_office_id = "rec3uGFZUkRJjaxk0"
 test_election_district_id = 'recbrO0CGN0P0C1mC'
 test_person_id = 'recQ5Qc7GX6PN3VwJ'
 test_candidate_id = 'recGLBFPaB3zMDGem'
-test_candidate_contest_id = 'recE0Oha5OnxNLFv4'
+nntest_candidate_contest_id = 'recE0Oha5OnxNLFv4'
 test_election_id = "recPTDvg1KWgN2dzx"
 test_ballot_measure_id = 'recmwQAoKWid0DfqC'
 test_gp_unit_id = 'recKCyQwhLDHp1cBD'
@@ -25,7 +25,7 @@ identifiers = { 'farallon': 'rec5K8APzm54h7Vnj',
                 'person_spacely': "recz2KGAdSdAzwgRq",
                 'party_hadronicrat': 'recg6kdFZ9iBvR2nF',
                 'party_leptonican': 'recxZqCzvl2XEKHYy',
-                'select_spacely': 'recPrSqz8XFt2Zbei',
+                'candidate_selection_spacely': 'recPrSqz8XFt2Zbei',
                 'candidate_spacely': 'recGLBFPaB3zMDGem'
                }
 
@@ -99,7 +99,11 @@ dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
                         "@type": "ElectionResults.InternationalizedText"
                     },
                     "PartyId": "recxZqCzvl2XEKHYy"
-                }
+                },
+         'candidate_selection_spacely': { "@type": "ElectionResults.CandidateSelection",
+                                          "@id": "recPrSqz8XFt2Zbei",
+                                          "CandidateIds": ["recGLBFPaB3zMDGem"]
+                                         }
          }
 
 # fixtures
@@ -122,6 +126,10 @@ def candidate(base):
 @pytest.fixture
 def candidate_spacely(base):
     return edf.Candidate(base, identifiers['candidate_spacely'])
+
+@pytest.fixture
+def candidate_selection_spacely(base):
+    return edf.CandidateSelection(base, identifiers['candidate_selection_spacely'])
 
 @pytest.fixture
 def party(base):
@@ -179,3 +187,7 @@ def test_party(party_leptonican):
 
 def test_candidate(candidate_spacely):
     assert candidate_spacely.as_dict() == dicts['candidate_spacely']
+
+def test_candidate_selection(candidate_selection_spacely):
+    assert candidate_selection_spacely.as_dict() == dicts['candidate_selection_spacely']
+

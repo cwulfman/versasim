@@ -160,9 +160,16 @@ class CandidateSelection(Edf):
     def __init__(self, base, identifier):
         super().__init__(base, identifier, 'CandidateSelections',
                          'ElectionResults.CandidateSelection')
+        self.CandidateIds = self.record['Candidates']
+        self.Label = self.record['Label']
 
     def as_dict(self):
-        pass
+        data = {"@type": self.type,
+                "@id": self.id,
+                "CandidateIds": self.CandidateIds
+        }
+        return data
+
 
 
 class CandidateContest(Edf):
