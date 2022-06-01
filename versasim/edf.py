@@ -98,7 +98,8 @@ class Office(Edf):
     def __init__(self, base, identifier):
         super().__init__(base, identifier, 'Office',
                          'ElectionResults.Office')
-        self.Name = self.record['Name']
+        if 'Name' in self.record:
+            self.Name = self.record['Name']
         self.Label = self.record['Label']
         self.IsPartisan = self.record['IsPartisan']
         self.ElectionDistrict = None
@@ -288,7 +289,7 @@ class BallotStyle(Edf):
 
     @property
     def OrderedContests(self):
-        value = [ordered_contest(contest) for contest in self.contests]
+        value = [OrderedContest(contest) for contest in self.contests]
 
     def as_dict(self):
         data = {"@type": self.type,
@@ -313,19 +314,41 @@ class Election(Edf):
         self.Type = self.record['Type']
         
 
-        
-
     def as_dict(self):
-        c_contests = [c.as_dict() for c in self.candidate_contests]
-        b_contests = [b.as_dict() for b in self.ballot_measure_contests]
         data = {"@type": self.type,
                 "@id": self.id,
-                "Name": self.name,
-                "Contest": [c.as_dict() for c in self.contest],
-                "BallotStyle": [b.as_dict() for b in self.ballot_style]
+                "Name": self.Name,
+                "Contest": [c.as_dict() for c in self.Contest],
+                "BallotStyle": [b.as_dict() for b in self.BallotStyle]
                 }
-        
+
         return data
+
+class ElectionReport(Edf):
+    def __init__(self, base):
+        self.type = "ElectionResults.ElectionReport"
+        self.base = base
+
+    def record_ids(self, table_name):
+        return [r['id'] for r in self.base.get_table(table_name).all()]
+
+    def generate_report(self):
+                report = {"@type": "ElectionResults.ElectionReport",
+                          "Format": "precinct-level",
+                          "GeneratedDate" : datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                          "VendorApplicationId": "ElectionReporter",
+                          "Issuer": "TrustTheVote",
+                          "IssuerAbbreviation": "TTV",
+                          "SequenceStart": 1,
+                          "SequenceEnd": 1}
+                report['Party'] = [Party(self.base, id).as_dict() for id in self.record_ids('Party')]
+                report['GpUnit'] = [GpUnit(self.base, id).as_dict() for id in self.record_ids('GpUnit')]
+                report['Office'] = [Office(self.base, id).as_dict() for id in self.record_ids('Office')]
+                report['Person'] = [Person(self.base, id).as_dict() for id in self.record_ids('Person')]
+                report['Election'] = [Election(self.base, id).as_dict() for id in self.record_ids('Election')]
+
+                return report
+
 
 class ElectionReporter:
     def __init__(self, base_id, api_key):
