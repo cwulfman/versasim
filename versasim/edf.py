@@ -254,15 +254,33 @@ class BallotMeasureSelection(Edf):
         return data
 
 
+class OrderedContest(Edf):
+    def __init__(self, contest_object):
+        self.type = 'ElectionResults.OrderedContest'
+        self.Contest = contest_object
+        self.OrderedContestSelection = self.Contest.ContestSelection
+
+    def as_dict(self):
+        data = { "@type": self.type,
+                 "ContestId": self.Contest.id,
+                 "OrderedContestSelectionIds": [selection.id
+                                                for selection
+                                                in self.OrderedContestSelection]
+        }
+        return data
+
+
 class BallotStyle(Edf):
     def __init__(self, base, id):
         super().__init__(base, id, 'BallotStyle', 'ElectionResults.BallotStyle')
-
-        self.Name = self.record['Name']
-        self.candidate_contests = [CandidateContest(base, id)
-                                   for id in self.record['Contests']]
-        self.ballot_measure_contests = [BallotMeasure(base, id)
-                                        for id in self.record['BallotMeasures']]
+        self.contests = []
+        if 'Contests' in self.record:
+            self.contests += [CandidateContest(base, id)
+                              for id in self.record['Contests']]
+        if 'BallotMeasures' in self.record:
+            self.contests += [BallotMeasure(base, id)
+                              for id in self.record['BallotMeasures']]
+        
 
     @property
     def name(self):
@@ -270,7 +288,7 @@ class BallotStyle(Edf):
 
     @property
     def OrderedContests(self):
-        return self.candidate_contests + self.ballot_measure_contests
+        value = [ordered_contest(contest) for contest in self.contests]
 
     def as_dict(self):
         data = {"@type": self.type,

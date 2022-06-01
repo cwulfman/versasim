@@ -179,7 +179,12 @@ dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
                             "@id": "rec6SD3XPXtW9KIhQ"
                         }
                     ]
-                }
+                },
+         "ordered_contest_mayor": { "@type": "ElectionResults.OrderedContest",
+                                    "ContestId": "recE0Oha5OnxNLFv4",
+                                    "OrderedContestSelectionIds":
+                                    ['recPrSqz8XFt2Zbei', 'recGkMGp1IBfWi6vy', 'recm7Iu8kuvUyNLjd']
+                                   }
          }
 
 # fixtures
@@ -252,6 +257,11 @@ def election(base):
 def candidate_contest_mayor(base):
     return edf.CandidateContest(base, identifiers['candidate_contest_mayor'])
 
+@pytest.fixture
+def ordered_contest_mayor(base):
+    contest = edf.CandidateContest(base, identifiers['candidate_contest_mayor'])
+    return edf.OrderedContest(contest)
+
 # tests
 def test_gp_unit(farallon):
     assert farallon.as_dict() == dicts['farallon']
@@ -276,3 +286,6 @@ def test_candidate_contest(candidate_contest_mayor):
 
 def test_ballot_measure(ballot_measure_tax_increase):
     assert ballot_measure_tax_increase.as_dict() == dicts['ballot_measure_tax_increase']
+
+def test_ordered_contest(ordered_contest_mayor):
+    assert ordered_contest_mayor.as_dict() == dicts['ordered_contest_mayor']
