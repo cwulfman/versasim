@@ -178,7 +178,6 @@ class CandidateSelection(Edf):
 
         return data
 
-
 class Contest(Edf):
     def __init__(self, base, id, table, type):
         super().__init__(base, id, table, type)
@@ -188,7 +187,8 @@ class Contest(Edf):
         self.ContestSelection = []
         self.ElectionDistrict = GpUnit(base, self.record['ElectionDistrict'][0])
         self.Name = self.record['Name']
-        self.VoteVariation = self.record['VoteVariation']
+        if 'VoteVariation' in self.record:
+            self.VoteVariation = self.record['VoteVariation']
         self.ContestSelection = []
 
 class CandidateContest(Contest):
@@ -220,8 +220,38 @@ class CandidateContest(Contest):
 class BallotMeasure(Contest):
     def __init__(self, base, id):
         super().__init__(base, id, 'BallotMeasure',
-                         'ElectionResults.OrderedContest')
+                         'ElectionResults.BallotMeasureContest')
         self.FullText = self.record['FullText']
+        if 'ContestSelections' in self.record:
+            self.ContestSelection = [BallotMeasureSelection(self.base, selection_id)
+                                     for selection_id
+                                     in self.record['ContestSelections']]
+
+    def as_dict(self):
+        data = {"@type": self.type,
+                "@id": self.id,
+                "ElectionDistrictId": self.ElectionDistrict.id,
+                "Name": self.Name,
+                "FullText": internationalized_text(self.FullText),
+                "ContestSelection": [selection.as_dict()
+                                     for selection
+                                     in self.ContestSelection]
+                }
+        return data
+
+
+class BallotMeasureSelection(Edf):
+    def __init__(self, base, identifier):
+        super().__init__(base, identifier,
+                         'BallotMeasureSelections',
+                         'ElectionResults.BallotMeasureSelection')
+        self.Selection = self.record['Selection']
+
+    def as_dict(self):
+        data = {"@type": self.type,
+                "@id": self.id,
+                "Selection": internationalized_text(self.Selection)}
+        return data
 
 
 class BallotStyle(Edf):

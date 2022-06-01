@@ -29,7 +29,8 @@ identifiers = { 'farallon': 'rec5K8APzm54h7Vnj',
                 'candidate_spacely': 'recGLBFPaB3zMDGem',
                 'candidate_cogswell': 'rec9I3CAGByPKmNef',
                 'candidate_selection_cogswell': 'recGkMGp1IBfWi6vy',
-                'candidate_contest_mayor': 'recE0Oha5OnxNLFv4'
+                'candidate_contest_mayor': 'recE0Oha5OnxNLFv4',
+                'ballot_measure_tax_increase': 'recmwQAoKWid0DfqC'
                }
 
 dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
@@ -132,6 +133,52 @@ dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
                     "ElectionDistrictId": "recbrO0CGN0P0C1mC",
                     "Name": "Contest for Mayor of Orbit City",
                     "VoteVariation": "plurality"
+                },
+         'ballot_measure_tax_increase': {
+                    "@type": "ElectionResults.BallotMeasureContest",
+                    "@id": "recmwQAoKWid0DfqC",
+                    "ElectionDistrictId": "recKCyQwhLDHp1cBD",
+                    "Name": "Air Traffic Control Tax Increase",
+                    "FullText": {
+                        "@type": "ElectionResults.InternationalizedText",
+                        "Text": [
+                            {
+                                "@type": "ElectionResults.LanguageString",
+                                "Language": "en",
+                                "Content": "Shall Gadget County increase its sales tax from 1% to 1.1% for the purpose of raising additional revenue to fund expanded air traffic control operations?"
+                            }
+                        ]
+                    },
+                    "ContestSelection": [
+                        {
+                            "Selection": {
+                                "Text": [
+                                    {
+                                        "Content": "Yes",
+                                        "Language": "en",
+                                        "@type": "ElectionResults.LanguageString"
+                                    }
+                                ],
+                                "@type": "ElectionResults.InternationalizedText"
+                            },
+                            "@type": "ElectionResults.BallotMeasureSelection",
+                            "@id": "recu9g5t3w0eOMoVW"
+                        },
+                        {
+                            "Selection": {
+                                "Text": [
+                                    {
+                                        "Content": "No",
+                                        "Language": "en",
+                                        "@type": "ElectionResults.LanguageString"
+                                    }
+                                ],
+                                "@type": "ElectionResults.InternationalizedText"
+                            },
+                            "@type": "ElectionResults.BallotMeasureSelection",
+                            "@id": "rec6SD3XPXtW9KIhQ"
+                        }
+                    ]
                 }
          }
 
@@ -190,8 +237,8 @@ def candidate_contest(base):
     return edf.CandidateContest(base, test_candidate_contest_id)
 
 @pytest.fixture
-def ballot_measure(base):
-    return edf.BallotMeasure(base, test_ballot_measure_id)
+def ballot_measure_tax_increase(base):
+    return edf.BallotMeasure(base, identifiers['ballot_measure_tax_increase'])
 
 @pytest.fixture
 def ballot_style(base):
@@ -227,3 +274,5 @@ def test_candidate_selection(candidate_selection_spacely):
 def test_candidate_contest(candidate_contest_mayor):
     assert candidate_contest_mayor.as_dict() == dicts['candidate_contest_mayor']
 
+def test_ballot_measure(ballot_measure_tax_increase):
+    assert ballot_measure_tax_increase.as_dict() == dicts['ballot_measure_tax_increase']
