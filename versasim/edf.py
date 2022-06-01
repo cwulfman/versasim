@@ -146,6 +146,15 @@ class Candidate(Edf):
         if 'Party' in self.record:
             self.Party = Party(base, self.record['Party'][0])
 
+    def as_dict(self):
+        data = {"@type": self.type,
+                "@id": self.id,
+                "PersonId": self.Person.id,
+                "BallotName": internationalized_text(self.BallotName),
+                "PartyId": self.Party.id
+        }
+        return data
+
 
 class CandidateSelection(Edf):
     def __init__(self, base, identifier):

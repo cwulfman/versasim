@@ -25,7 +25,8 @@ identifiers = { 'farallon': 'rec5K8APzm54h7Vnj',
                 'person_spacely': "recz2KGAdSdAzwgRq",
                 'party_hadronicrat': 'recg6kdFZ9iBvR2nF',
                 'party_leptonican': 'recxZqCzvl2XEKHYy',
-                'select_spacely': 'recPrSqz8XFt2Zbei'
+                'select_spacely': 'recPrSqz8XFt2Zbei',
+                'candidate_spacely': 'recGLBFPaB3zMDGem'
                }
 
 dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
@@ -82,7 +83,23 @@ dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
                                        }
                                    ]
                                },
-                              }
+                              },
+         'candidate_spacely': {
+                    "@type": "ElectionResults.Candidate",
+                    "@id": "recGLBFPaB3zMDGem",
+                    "PersonId": "recz2KGAdSdAzwgRq",
+                    "BallotName": {
+                        "Text": [
+                            {
+                                "Content": "Cosmo Spacely",
+                                "Language": "en",
+                                "@type": "ElectionResults.LanguageString"
+                            }
+                        ],
+                        "@type": "ElectionResults.InternationalizedText"
+                    },
+                    "PartyId": "recxZqCzvl2XEKHYy"
+                }
          }
 
 # fixtures
@@ -101,6 +118,10 @@ def farallon(base):
 @pytest.fixture
 def candidate(base):
     return edf.Candidate(base, test_candidate_id)
+
+@pytest.fixture
+def candidate_spacely(base):
+    return edf.Candidate(base, identifiers['candidate_spacely'])
 
 @pytest.fixture
 def party(base):
@@ -155,3 +176,6 @@ def test_person(person_spacely):
 
 def test_party(party_leptonican):
     assert party_leptonican.as_dict() == dicts['party_leptonican']
+
+def test_candidate(candidate_spacely):
+    assert candidate_spacely.as_dict() == dicts['candidate_spacely']
