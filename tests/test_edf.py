@@ -111,9 +111,6 @@ def test_ballot_measure(ballot_measure):
     assert ballot_measure.Name == 'Air Traffic Control Tax Increase'
     assert ballot_measure.FullText == 'Shall Gadget County increase its sales tax from 1% to 1.1% for the purpose of raising additional revenue to fund expanded air traffic control operations?'
 
-def test_ballot_style(ballot_style):
-    assert ballot_style.Name == 'Ballot Style 1'
-
 def test_election(election):
     assert election.Name == 'Special Election'
     assert election.Type == 'special'

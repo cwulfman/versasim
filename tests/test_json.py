@@ -1,10 +1,15 @@
 import pytest
 from pyairtable import Base
 import versasim.edf as edf
+from dotenv import load_dotenv, dotenv_values
+import os
+
+load_dotenv()
+config = dotenv_values()
 
 
-BASE_ID =  "appTNDM2DwCS2vYun"
-API_KEY = "keyuXobQvG2xmGv1q"
+BASE_ID =  config['BASE_ID']
+API_KEY = config['API_KEY']
 test_candidate_id = "recGLBFPaB3zMDGem"
 test_party_id = "recg6kdFZ9iBvR2nF"
 test_office_id = "rec3uGFZUkRJjaxk0"
@@ -190,7 +195,7 @@ dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
 # fixtures
 @pytest.fixture
 def base():
-    return Base(API_KEY, BASE_ID)
+    return Base(os.getenv('API_KEY'), os.getenv('BASE_ID'))
 
 @pytest.fixture
 def gadget_county(base):
