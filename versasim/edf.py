@@ -3,10 +3,6 @@
 from datetime import datetime
 from pyairtable import Base, Table
 
-BASE_ID =  "appTNDM2DwCS2vYun"
-API_KEY = "keyuXobQvG2xmGv1q"
-
-
 def language_string(content, language="en"):
     """returns a dictionary-model of a LanguageString"""
     return {"@type": "ElectionResults.LanguageString",
@@ -22,35 +18,6 @@ def internationalized_text(content, label='', language="en"):
         data['Label'] = label
 
     return data
-
-
-# def gp_unit(record):
-#     fields = record['fields']
-#     return {"@type": "ElectionResults.ReportingUnit",
-#             "@id": record['id'],
-#             "Name": internationalized_text(fields['Name'])}
-
-# def election(record):
-#     fields = record['fields']
-#     data = {"@type": "ElectionResults.Election",
-#             "@id": record['id'],
-#             "Type": fields['Type'],
-#             "StartDate": fields['StartDate'],
-#             "EndDate": fields['EndDate'],
-#             "ElectionScopeId": fields['ElectionScope'],
-#             "Name": internationalized_text(fields['Name'])
-#             }
-    
-#     return data
-
-# def ballot_style(record):
-#     fields = record['fields']
-#     data = {"@type": 'ElectionResults.BallotStyle',
-#             "@id": record['id'],
-#             "GpUnitIds": fields['GpUnits']
-#             }
-#     return data
-
 
 class Edf():
     def __init__(self, base, id, table, type):
