@@ -252,7 +252,7 @@ class BallotStyle(Edf):
         if 'BallotMeasures' in self.record:
             self._contests += [BallotMeasure(base, id)
                               for id in self.record['BallotMeasures']]
-        
+
 
     @property
     def name(self):
@@ -300,8 +300,6 @@ class ElectionReport(Edf):
     def __init__(self, base):
         self.type = "ElectionResults.ElectionReport"
         self.base = base
-        self._Party = []
-        self._GpUnit = []
 
     def record_ids(self, table_name):
         return [r['id'] for r in self.base.get_table(table_name).all()]
