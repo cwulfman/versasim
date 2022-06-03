@@ -38,32 +38,7 @@ identifiers = { 'farallon': 'rec5K8APzm54h7Vnj',
                 'ballot_measure_tax_increase': 'recmwQAoKWid0DfqC'
                }
 
-dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
-                       "@id": "rec5K8APzm54h7Vnj",
-                       "Type": "state",
-                       "Name": {
-                           "@type": "ElectionResults.InternationalizedText",
-                           "Text": [{"@type": "ElectionResults.LanguageString",
-                                   "Content": "The State of Farallon",
-                                   "Label": "Farallon",
-                                   "Language": "en"}]
-                       }
-                      },
-         'office_mayor': { "@type": "ElectionResults.Office",
-                "@id": "rec3uGFZUkRJjaxk0",
-                    "IsPartisan": True,
-                    "Name": {
-                        "@type": "ElectionResults.InternationalizedText",
-                        "Text": [
-                            {
-                                "@type": "ElectionResults.LanguageString",
-                                "Language": "en",
-                                "Label": "Mayor",
-                                "Content": "Mayor of Orbit City"
-                            }
-                        ]
-                    }
-                   },
+dicts = {
          'person_spacely': { "@type": "ElectionResults.Person",
                              "@id": "recz2KGAdSdAzwgRq",
                              "FirstName": "Cosmo",
@@ -79,20 +54,6 @@ dicts = {'farallon': {"@type": "ElectionResults.ReportingUnit",
                                  ]
                              }
                             },
-         'party_leptonican': { "@type": "ElectionResults.Party",
-                               "@id": "recxZqCzvl2XEKHYy",
-                               "Name": {
-                                   "@type": "ElectionResults.InternationalizedText",
-                                   "Text": [
-                                       {
-                                           "@type": "ElectionResults.LanguageString",
-                                           "Language": "en",
-                                           "Label": "Leptonican",
-                                           "Content": "The Lepton Party"
-                                       }
-                                   ]
-                               },
-                              },
          'candidate_spacely': {
                     "@type": "ElectionResults.Candidate",
                     "@id": "recGLBFPaB3zMDGem",
@@ -229,9 +190,6 @@ def party_leptonican(base):
 def office(base):
     return edf.Office(base, test_office_id)
 
-@pytest.fixture
-def office_mayor(base):
-    return edf.Office(base, identifiers['office_mayor'])
 
 @pytest.fixture
 def person(base):
@@ -267,18 +225,8 @@ def ordered_contest_mayor(base):
     contest = edf.CandidateContest(base, identifiers['candidate_contest_mayor'])
     return edf.OrderedContest(contest)
 
-# tests
-def test_gp_unit(farallon):
-    assert farallon.as_dict() == dicts['farallon']
-
-def test_office(office_mayor):
-    assert office_mayor.as_dict() == dicts['office_mayor']
-
 def test_person(person_spacely):
     assert person_spacely.as_dict() == dicts['person_spacely']
-
-def test_party(party_leptonican):
-    assert party_leptonican.as_dict() == dicts['party_leptonican']
 
 def test_candidate(candidate_spacely):
     assert candidate_spacely.as_dict() == dicts['candidate_spacely']

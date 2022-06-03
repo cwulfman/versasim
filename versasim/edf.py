@@ -244,7 +244,10 @@ class OrderedContest(Edf):
 
 class BallotStyle(Edf):
     def __init__(self, base, id):
-        super().__init__(base, id, 'BallotStyle', 'ElectionResults.BallotStyle')
+        super().__init__(base, id, 'BallotStyle',
+                         'ElectionResults.BallotStyle')
+        if 'Name' in self.record:
+            self.name = internationalized_text(self.record['Name'])
         self._contests = []
         if 'Contests' in self.record:
             self._contests += [CandidateContest(base, id)
@@ -253,10 +256,6 @@ class BallotStyle(Edf):
             self._contests += [BallotMeasure(base, id)
                               for id in self.record['BallotMeasures']]
 
-
-    @property
-    def name(self):
-        return internationalized_text(self.record['Name'])
 
     @property
     def OrderedContests(self):
