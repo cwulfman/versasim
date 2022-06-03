@@ -30,3 +30,6 @@ Move into the interior `versasim` directory and start the server:
 ```
 
 The server is now running on port 8000 at localhost: e.g., [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+## Accessing the API
+There is extensive documentation at the [docs endpoint](http://127.0.0.1:8000/docs) or the [redoc endpoint](http://127.0.0.1:8000/redoc)
