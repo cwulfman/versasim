@@ -18,7 +18,9 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return {"message": "Hello Again"}
+    return {"message": "Hello Again",
+            "elections": app.url_path_for("get_elections")
+            }
 
 @app.get("/elections")
 async def get_elections():
@@ -88,7 +90,7 @@ async def get_ballot_measure(contest_id):
 
 @app.get("/ballotstyles")
 async def get_ballotstyles():
-    pass
+    return base.get_table('BallotStyle').all()
 
 @app.get("/ballotstyles/{ballotstyle_id}")
 async def get_ballotstyle(ballotstyle_id):
