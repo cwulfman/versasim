@@ -1,5 +1,5 @@
 # Versasim
-A lightweight simulator to help in testing.
+A lightweight election data management system.
 
 
 ## Installation
