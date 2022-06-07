@@ -16,7 +16,7 @@ def table_ids(base, table):
 
 @pytest.fixture
 def base():
-    return Base(config['API_KEY'], config['BASE_ID'])
+    return Base(config['API_KEY'], config['TEST_BASE_IDn'])
 
 @pytest.fixture
 def party_ids(base):

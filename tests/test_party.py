@@ -11,7 +11,7 @@ identifiers = {'hadron_party': 'recg6kdFZ9iBvR2nF'}
 
 @pytest.fixture
 def base():
-    return Base(config['API_KEY'], config['BASE_ID'])
+    return Base(config['API_KEY'], config['TEST_BASE_ID'])
 
 @pytest.fixture
 def hadron_party(base):

@@ -12,7 +12,7 @@ identifiers = {'office_mayor': 'rec3uGFZUkRJjaxk0',
 
 @pytest.fixture
 def base():
-    return Base(config['API_KEY'], config['BASE_ID'])
+    return Base(config['API_KEY'], config['TEST_BASE_ID'])
 
 @pytest.fixture
 def mayor(base):

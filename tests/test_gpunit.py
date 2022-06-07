@@ -13,7 +13,7 @@ identifiers = {'farallon': 'rec5K8APzm54h7Vnj',
 
 @pytest.fixture
 def base():
-    return Base(config['API_KEY'], config['BASE_ID'])
+    return Base(config['API_KEY'], config['TEST_BASE_ID'])
 
 @pytest.fixture
 def gadget_county(base):

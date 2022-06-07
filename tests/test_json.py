@@ -8,7 +8,7 @@ load_dotenv()
 config = dotenv_values()
 
 
-BASE_ID =  config['BASE_ID']
+TEST_BASE_ID =  config['TEST_BASE_ID']
 API_KEY = config['API_KEY']
 test_candidate_id = "recGLBFPaB3zMDGem"
 test_party_id = "recg6kdFZ9iBvR2nF"
@@ -156,7 +156,7 @@ dicts = {
 # fixtures
 @pytest.fixture
 def base():
-    return Base(os.getenv('API_KEY'), os.getenv('BASE_ID'))
+    return Base(os.getenv('API_KEY'), os.getenv('TEST_BASE_ID'))
 
 @pytest.fixture
 def gadget_county(base):
