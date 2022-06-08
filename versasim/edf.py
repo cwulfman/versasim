@@ -251,6 +251,9 @@ class BallotStyle(Edf):
                          'ElectionResults.BallotStyle')
         if 'Name' in self.record:
             self.name = internationalized_text(self.record['Name'])
+
+        if 'GpUnits' in self.record:
+            self.GpUnit = self.record['GpUnits']
         self._contests = []
         if 'Contests' in self.record:
             self._contests += [CandidateContest(base, id)
@@ -273,7 +276,7 @@ class BallotStyle(Edf):
 
 
 class Election(Edf):
-    def __init__(self, base, id):
+    def __init__(self, base, id, precinct=None):
         super().__init__(base, id, "Election", "ElectionResults.Election")
         candidate_contests = [CandidateContest(base, id)
                               for id in
@@ -282,14 +285,24 @@ class Election(Edf):
                                    for id in
                                    self.record['BallotMeasure']]
         self.Contest = candidate_contests + ballot_measure_contests
-        self.BallotStyle = [BallotStyle(base, id)
+        ballot_styles = [BallotStyle(base, id)
                             for id in
                             self.record['BallotStyle']]
+        if precinct:
+            filt = filter(lambda x: precinct in x.GpUnit, ballot_styles)
+            self.BallotStyle = list(filt)
+        else:
+            self.BallotStyle = ballot_styles
+
         self.Name = self.record['Name']
         self.StartDate = self.record['StartDate']
         self.EndDate = self.record['EndDate']
         self.Type = self.record['Type']
         self.ElectionScopeId = self.record['ElectionScope'][0]
+
+    def ballot_style_for(self, precinct_id):
+        filt = filter(lambda x: precinct_id in x.GpUnit, self.BallotStyle)
+        return list(filt)
 
     def as_dict(self):
         data = {"@type": self.type,
@@ -306,14 +319,37 @@ class Election(Edf):
 
 
 class ElectionReport(Edf):
-    def __init__(self, base):
+    def __init__(self, base, election_id=None, precinct_id=None):
         self.type = "ElectionResults.ElectionReport"
         self.base = base
+        if election_id:
+            self.Election = [Election(self.base, election_id, precinct_id)]
+        else:
+            self.Election = [Election(self.base, id, precinct_id)
+                             for id in self.record_ids('Election')]
+
+        self.Party = [Party(self.base, id)
+                      for id in self.record_ids('Party')]
+
+        self.GpUnit = [GpUnit(self.base, id)
+                       for id in self.record_ids('GpUnit')]
+
+        self.Office = [Office(self.base, id)
+                       for id in self.record_ids('Office')]
+
+        self.Person = [Person(self.base, id)
+                       for id in self.record_ids('Person')]
 
     def record_ids(self, table_name):
         return [r['id'] for r in self.base.get_table(table_name).all()]
 
-    def generate_report(self):
+    def report_for(self, election_id, precinct_id):
+        election = Election(self.base, election_id)
+        ballot_style = election.ballot_style_for(precinct_id)
+        self.BallotStyle = [ballot_style]
+        return self
+
+    def as_dict():
         report = {"@type": "ElectionResults.ElectionReport",
                   "Format": "precinct-level",
                   "GeneratedDate":
@@ -323,10 +359,10 @@ class ElectionReport(Edf):
                   "IssuerAbbreviation": "TTV",
                   "Status": "pre-election",
                   "SequenceStart": 1,
-                  "SequenceEnd": 1}
-        report['Party'] = [Party(self.base, id).as_dict() for id in self.record_ids('Party')]
-        report['GpUnit'] = [GpUnit(self.base, id).as_dict() for id in self.record_ids('GpUnit')]
-        report['Office'] = [Office(self.base, id).as_dict() for id in self.record_ids('Office')]
-        report['Person'] = [Person(self.base, id).as_dict() for id in self.record_ids('Person')]
-        report['Election'] = [Election(self.base, id).as_dict() for id in self.record_ids('Election')]
+                  "SequenceEnd": 1,
+                  "Election": [e.as_dict() for e in self.Election],
+                  "GpUnit": [g.as_dict() for g in self.GpUnit],
+                  "Party": [p.as_dict() for p in self.Party],
+                  "Office": [o.as_dict() for o in self.Office],
+                  "Person": [p.as_dict() for p in self.Person]}
         return report
