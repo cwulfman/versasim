@@ -72,7 +72,8 @@ class Office(Edf):
         if 'Name' in self.record:
             self.Name = self.record['Name']
         self.Label = self.record['Label']
-        self.IsPartisan = self.record['IsPartisan']
+        if 'IsPartisan' in self.record:
+            self.IsPartisan = self.record['IsPartisan']
         self.ElectionDistrict = None
         if 'ElectionDistrict' in self.record:
             self.ElectionDistrict = GpUnit(base,
