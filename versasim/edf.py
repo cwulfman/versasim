@@ -34,11 +34,15 @@ class GpUnit(Edf):
         self.Label = self.record['Label']
         self.Name = self.record['Name']
         self.Type = self.record['Type']
-        self.ComposingGpUnits = []
-        if 'ComposingGpUnits' in self.record:
-            self.ComposingGpUnits = [GpUnit(base, c_id)
-                                     for c_id
-                                     in self.record['ComposingGpUnits']]
+        self._composing_gp_units = []
+
+    @property
+    def ComposingGpUnits(self):
+        if not self._composing_gp_units:
+            self._composing_gp_units =[GpUnit(self.base, unit_id)
+                                    for unit_id
+                                    in self.record['ComposingGpUnits']]
+        return self._composing_gp_units
 
     def as_dict(self):
         data = {"@type": self.type,
@@ -74,10 +78,15 @@ class Office(Edf):
         self.Label = self.record['Label']
         if 'IsPartisan' in self.record:
             self.IsPartisan = self.record['IsPartisan']
-        self.ElectionDistrict = None
-        if 'ElectionDistrict' in self.record:
-            self.ElectionDistrict = GpUnit(base,
-                                           self.record['ElectionDistrict'][0])
+        self._election_district = None
+
+    @property
+    def ElectionDistrict(self):
+        if not self._election_district:
+            if 'ElectionDistrict' in self.record:
+                self._election_district = GpUnit(self.base,
+                                                 self.record['ElectionDistrict'][0])
+        return self._election_district
 
     def as_dict(self):
         data = {"@type": self.type,
@@ -111,13 +120,24 @@ class Candidate(Edf):
                          'ElectionResults.Candidate')
         self.BallotName = self.record['BallotName']
 
-        self.Person = None
-        if 'Person' in self.record:
-            self.Person = Person(base, self.record['Person'][0])
+        self._person = None
+        self._party = None
 
-        self.Party = None
-        if 'Party' in self.record:
-            self.Party = Party(base, self.record['Party'][0])
+
+    @property
+    def Person(self):
+        if not self._person:
+            if 'Person' in self.record:
+                self._person = Person(self.base, self.record['Person'][0])
+        return self._person
+
+    @property
+    def Party(self):
+        if not self._party:
+            if 'Party' in self.record:
+                self._party = Party(self.base, self.record['Party'][0])
+        return self._party
+
 
     def as_dict(self):
         data = {"@type": self.type,
