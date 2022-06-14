@@ -35,7 +35,7 @@ async def get_election(election_id):
 
 @app.get("/electionReport")
 async def get_election_report():
-    report = edf.ElectionReport(base) # ignore id for now and return all
+    report = edf.ElectionReport(base, None, None)
     return report.as_dict()
 
 @app.get("/electionReport/{election_id}/{precinct_id}")
