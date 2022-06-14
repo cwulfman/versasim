@@ -6,9 +6,8 @@ from dotenv import load_dotenv, dotenv_values
 load_dotenv()
 config = dotenv_values()
 
-identifiers = {'farallon': 'rec5K8APzm54h7Vnj',
-               'gadget_county': 'recKCyQwhLDHp1cBD',
-               'orbit_city': 'recbrO0CGN0P0C1mC'}
+election_id = 'recPTDvg1KWgN2dzx'
+precinct_id = 'recBpUK5BY7YR4VHo'
 
 def table_ids(base, table):
     return [r['id'] for r in base.get_table(table).all()]
@@ -16,11 +15,18 @@ def table_ids(base, table):
 
 @pytest.fixture
 def base():
-    return Base(config['API_KEY'], config['TEST_BASE_IDn'])
+    return Base(config['API_KEY'], config['TEST_BASE_ID'])
+
 
 @pytest.fixture
-def party_ids(base):
-    return table_ids(base, 'Party')
+def report(base):
+    return edf.ElectionReport(base, election_id, precinct_id)
 
-def officeids(base):
-    return table_ids(base, 'Office')
+
+def test_election(report):
+    assert report.Election[0].id == election_id
+
+
+def test_dict(report):
+    the_dict = report.as_dict()
+    assert the_dict['@type'] == "ElectionResults.ElectionReport"

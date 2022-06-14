@@ -142,10 +142,14 @@ class Candidate(Edf):
 
     def as_dict(self):
         data = {"@type": self.type,
-                "@id": self.id,
-                "PersonId": self.Person.id,
-                "BallotName": internationalized_text(self.BallotName),
-                "PartyId": self.Party.id}
+                "@id": self.id}
+                
+        if self.Person:
+            data['PersonId'] = self.Person.id
+        if self.Party:
+            data['PartyId'] = self.Party.id
+        if self.BallotName:
+            data['BallotName'] = internationalized_text(self.BallotName)
         return data
 
 
@@ -326,6 +330,7 @@ class BallotStyle(Edf):
 class Election(Edf):
     def __init__(self, base, id, precinct=None):
         super().__init__(base, id, "Election", "ElectionResults.Election")
+        self.precinct = precinct
         self.Name = self.record['Name']
         self.StartDate = self.record['StartDate']
         self.EndDate = self.record['EndDate']
@@ -341,11 +346,11 @@ class Election(Edf):
     @property
     def BallotStyle(self):
         if not self._ballot_styles:
-            all_ballot_styles = [BallotStyle(base, id)
+            all_ballot_styles = [BallotStyle(self.base, id)
                                    for id in
                                    self.record['BallotStyle']]
             if self._precinct:
-                filt = filter(lambda x: precinct in x.GpUnit, all_ballot_styles)
+                filt = filter(lambda x: self.precinct in x.GpUnit, all_ballot_styles)
                 self._ballot_styles = list(filt)
             else:
                 self._ballot_styles = all_ballot_styles
@@ -365,7 +370,7 @@ class Election(Edf):
     @property
     def ballot_measure_contests(self):
         if not self._ballot_measure_contests:
-            self._ballot_measure_contests = [BallotMeasure(base, id)
+            self._ballot_measure_contests = [BallotMeasure(self.base, id)
                                              for id in
                                              self.record['BallotMeasure']]
         return self._ballot_measure_contests
@@ -440,7 +445,7 @@ class ElectionReport(Edf):
         self.BallotStyle = [ballot_style]
         return self
 
-    def as_dict():
+    def as_dict(self):
         report = {"@type": "ElectionResults.ElectionReport",
                   "Format": "precinct-level",
                   "GeneratedDate":
