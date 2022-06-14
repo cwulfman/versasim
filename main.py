@@ -39,7 +39,7 @@ async def get_election_report():
     return report.as_dict()
 
 @app.get("/electionReport/{election_id}/{precinct_id}")
-async def get_election_report_1(election, election_id, precinct_id):
+async def get_election_report_1(election_id, precinct_id):
     report = edf.ElectionReport(base, election_id, precinct_id)
     return report.as_dict()
 

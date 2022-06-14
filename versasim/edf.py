@@ -1,5 +1,6 @@
 """ Airtable interface. """
 
+import itertools
 from datetime import datetime
 from pyairtable import Base, Table
 
@@ -170,18 +171,30 @@ class CandidateSelection(Edf):
 
 
 class Contest(Edf):
+    """An abstract class"""
     def __init__(self, base, id, table, type):
         super().__init__(base, id, table, type)
-        self.Abbreviation = None
-        self.BallotSubTitle = None
-        self.BallotTitle = None
-        self.ContestSelection = []
-        self.ElectionDistrict = GpUnit(base,
-                                       self.record['ElectionDistrict'][0])
         self.Name = self.record['Name']
+        self._abbreviation = None
+        self._ballot_subTitle = None
+        self._ballot_title = None
+        self._contest_selection = []
+        self._election_district = None
+
+
+    @property
+    def VoteVariation(self):
         if 'VoteVariation' in self.record:
-            self.VoteVariation = self.record['VoteVariation']
-        self.ContestSelection = []
+            return self.record['VoteVariation']
+        else:
+            return None
+
+    @property
+    def ElectionDistrict(self):
+        if not self._election_district:
+            self._election_district = GpUnit(self.base,
+                                             self.record['ElectionDistrict'][0])
+        return self._election_district
 
 
 class CandidateContest(Contest):
@@ -190,11 +203,26 @@ class CandidateContest(Contest):
                          'ElectionResults.CandidateContest')
         self.VotesAllowed = self.record['VotesAllowed']
         self.Office = self.record['Office']
+        self._candidates = []
 
-        if 'ContestSelections' in self.record:
-            self.ContestSelection = [CandidateSelection(self.base, selection_id)
-                                     for selection_id
-                                     in self.record['ContestSelections']]
+
+    @property
+    def ContestSelection(self):
+        if not self._contest_selection:
+            self._contest_selection = [CandidateSelection(self.base, selection_id)
+                                       for selection_id
+                                       in self.record['ContestSelections']]
+
+        return self._contest_selection
+
+    @property
+    def Candidates(self):
+        if not self._candidates:
+            list_of_lists = [selection.CandidateIds
+                             for selection in
+                             self.ContestSelection]
+            self._candidates = [item for sublist in list_of_lists for item in sublist]
+        return self._candidates
 
     def as_dict(self):
         data = {"@type": self.type,
@@ -298,31 +326,73 @@ class BallotStyle(Edf):
 class Election(Edf):
     def __init__(self, base, id, precinct=None):
         super().__init__(base, id, "Election", "ElectionResults.Election")
-        candidate_contests = [CandidateContest(base, id)
-                              for id in
-                              self.record['CandidateContest']]
-        ballot_measure_contests = [BallotMeasure(base, id)
-                                   for id in
-                                   self.record['BallotMeasure']]
-        self.Contest = candidate_contests + ballot_measure_contests
-        ballot_styles = [BallotStyle(base, id)
-                            for id in
-                            self.record['BallotStyle']]
-        if precinct:
-            filt = filter(lambda x: precinct in x.GpUnit, ballot_styles)
-            self.BallotStyle = list(filt)
-        else:
-            self.BallotStyle = ballot_styles
-
         self.Name = self.record['Name']
         self.StartDate = self.record['StartDate']
         self.EndDate = self.record['EndDate']
         self.Type = self.record['Type']
         self.ElectionScopeId = self.record['ElectionScope'][0]
+        self._precinct = precinct
+        self._candidate_contests = []
+        self._ballot_measure_contests = []
+        self._ballot_styles = []
+        self._candidate = []
 
+
+    @property
+    def BallotStyle(self):
+        if not self._ballot_styles:
+            all_ballot_styles = [BallotStyle(base, id)
+                                   for id in
+                                   self.record['BallotStyle']]
+            if self._precinct:
+                filt = filter(lambda x: precinct in x.GpUnit, all_ballot_styles)
+                self._ballot_styles = list(filt)
+            else:
+                self._ballot_styles = all_ballot_styles
+
+        return self._ballot_styles
+
+
+    @property
+    def candidate_contests(self):
+        if not self._candidate_contests:
+            self._candidate_contests = [CandidateContest(self.base, id)
+                                        for id in
+                                        self.record['CandidateContest']]
+        return self._candidate_contests
+
+
+    @property
+    def ballot_measure_contests(self):
+        if not self._ballot_measure_contests:
+            self._ballot_measure_contests = [BallotMeasure(base, id)
+                                             for id in
+                                             self.record['BallotMeasure']]
+        return self._ballot_measure_contests
+
+
+    @property
+    def Contest(self):
+        return self.candidate_contests + self.ballot_measure_contests
+
+    @property
+    def Candidate(self):
+        if not self._candidate:
+            candidate_lists = [contest.Candidates
+                               for contest in
+                               self.candidate_contests]
+
+        for c_list in candidate_lists:
+            for candidate_id in c_list:
+                self._candidate.append(Candidate(self.base, candidate_id))
+
+        return self._candidate
+
+    # no longer needed?
     def ballot_style_for(self, precinct_id):
         filt = filter(lambda x: precinct_id in x.GpUnit, self.BallotStyle)
         return list(filt)
+
 
     def as_dict(self):
         data = {"@type": self.type,
@@ -332,7 +402,8 @@ class Election(Edf):
                 "Type": self.Type,
                 "Name": internationalized_text(self.Name),
                 "Contest": [c.as_dict() for c in self.Contest],
-                "BallotStyle": [b.as_dict() for b in self.BallotStyle]
+                "BallotStyle": [b.as_dict() for b in self.BallotStyle],
+                "Candidate": [c.as_dict() for c in self.Candidate]
                 }
 
         return data
@@ -363,7 +434,7 @@ class ElectionReport(Edf):
     def record_ids(self, table_name):
         return [r['id'] for r in self.base.get_table(table_name).all()]
 
-    def report_for(self, election_id, precinct_id):
+    def report_for(self, election_id, precinct_id=None):
         election = Election(self.base, election_id)
         ballot_style = election.ballot_style_for(precinct_id)
         self.BallotStyle = [ballot_style]
