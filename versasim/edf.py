@@ -65,7 +65,8 @@ class Party(Edf):
     def as_dict(self):
         data = {"@type": self.type,
                 "@id": self.id,
-                "Name": internationalized_text(self.Name, self.Label)
+                "Name": internationalized_text(self.Name, self.Label),
+                "Abbreviation": internationalized_text(self.Abbreviation)
                 }
         return data
 
