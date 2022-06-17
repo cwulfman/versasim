@@ -79,7 +79,9 @@ class Office(Edf):
             self.Name = self.record['Name']
         self.Label = self.record['Label']
         if 'IsPartisan' in self.record:
-            self.IsPartisan = self.record['IsPartisan']
+            self.IsPartisan = True
+        else:
+            self.IsPartisan = False
         self._election_district = None
 
     @property
@@ -93,7 +95,7 @@ class Office(Edf):
     def as_dict(self):
         data = {"@type": self.type,
                 "@id": self.id,
-                "IsPartisan": True,
+                "IsPartisan": self.IsPartisan,
                 "Name": internationalized_text(self.Name, self.Label)
                 }
         return data
@@ -144,7 +146,7 @@ class Candidate(Edf):
     def as_dict(self):
         data = {"@type": self.type,
                 "@id": self.id}
-                
+
         if self.Person:
             data['PersonId'] = self.Person.id
         if self.Party:
