@@ -307,6 +307,9 @@ class BallotStyle(Edf):
         if 'Name' in self.record:
             self.name = internationalized_text(self.record['Name'])
 
+        # this is a hack; the airtable data should be fuller
+        self._external_identifier = self.record['ExternalIdentifier']
+
         if 'GpUnits' in self.record:
             self.GpUnit = self.record['GpUnits']
         self._contests = []
@@ -320,6 +323,10 @@ class BallotStyle(Edf):
                                self.record['BallotMeasures']]
 
     @property
+    def ExternalIdentifier(self):
+        pass
+
+    @property
     def OrderedContests(self):
         return [OrderedContest(contest) for contest in self._contests]
 
@@ -327,19 +334,22 @@ class BallotStyle(Edf):
         data = {"@type": self.type,
                 "GpUnitIds": self.record['GpUnits'],
                 "OrderedContent": [c.as_dict() for c in self.OrderedContests]}
+        external_identifier = {"@type": "ElectionResults.ExternalIdentifier",
+                               "Type": "other",
+                               "OtherType": "TTV",
+                               "Value": self._external_identifier}
+        data['ExternalIdentifier']= [external_identifier]
         return data
 
 
 class Election(Edf):
-    def __init__(self, base, id, precinct=None):
+    def __init__(self, base, id):
         super().__init__(base, id, "Election", "ElectionResults.Election")
-        self.precinct = precinct
         self.Name = self.record['Name']
         self.StartDate = self.record['StartDate']
         self.EndDate = self.record['EndDate']
         self.Type = self.record['Type']
         self.ElectionScopeId = self.record['ElectionScope'][0]
-        self._precinct = precinct
         self._candidate_contests = []
         self._ballot_measure_contests = []
         self._ballot_styles = []
@@ -352,11 +362,7 @@ class Election(Edf):
             all_ballot_styles = [BallotStyle(self.base, id)
                                    for id in
                                    self.record['BallotStyle']]
-            if self._precinct:
-                filt = filter(lambda x: self.precinct in x.GpUnit, all_ballot_styles)
-                self._ballot_styles = list(filt)
-            else:
-                self._ballot_styles = all_ballot_styles
+            self._ballot_styles = all_ballot_styles
 
         return self._ballot_styles
 
@@ -418,13 +424,13 @@ class Election(Edf):
 
 
 class ElectionReport(Edf):
-    def __init__(self, base, election_id=None, precinct_id=None):
+    def __init__(self, base, election_id=None):
         self.type = "ElectionResults.ElectionReport"
         self.base = base
         if election_id:
-            self.Election = [Election(self.base, election_id, precinct_id)]
+            self.Election = [Election(self.base, election_id)]
         else:
-            self.Election = [Election(self.base, id, precinct_id)
+            self.Election = [Election(self.base, id)
                              for id in self.record_ids('Election')]
 
         self.Party = [Party(self.base, id)
@@ -442,7 +448,8 @@ class ElectionReport(Edf):
     def record_ids(self, table_name):
         return [r['id'] for r in self.base.get_table(table_name).all()]
 
-    def report_for(self, election_id, precinct_id=None):
+    # no longer needed either?
+    def report_for(self, election_id):
         election = Election(self.base, election_id)
         ballot_style = election.ballot_style_for(precinct_id)
         self.BallotStyle = [ballot_style]
