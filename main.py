@@ -91,7 +91,7 @@ async def get_ballot_measures():
 
 @app.get("/ballot_measure{contest_id}")
 async def get_ballot_measure(contest_id):
-    return edf.BalotMeasure(base, contest_id).as_dict()
+    return edf.BallotMeasure(base, contest_id).as_dict()
 
 @app.get("/ballotstyles")
 async def get_ballotstyles():
