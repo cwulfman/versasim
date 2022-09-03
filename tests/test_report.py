@@ -20,7 +20,7 @@ def base():
 
 @pytest.fixture
 def report(base):
-    return edf.ElectionReport(base, election_id, precinct_id)
+    return edf.ElectionReport(base, election_id)
 
 
 def test_election(report):
