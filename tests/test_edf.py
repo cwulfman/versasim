@@ -110,7 +110,7 @@ def test_candidate_contest(candidate_contest):
     assert candidate_contest.VoteVariation == 'plurality'
     assert candidate_contest.ElectionDistrict.id == identifiers['orbit_city']
     assert identifiers['select_spacely'] in [c.id for c in candidate_contest.ContestSelection]
-    
+
 def test_ballot_measure(ballot_measure):
     assert ballot_measure.Name == 'Air Traffic Control Tax Increase'
     assert ballot_measure.FullText == 'Shall Gadget County increase its sales tax from 1% to 1.1% for the purpose of raising additional revenue to fund expanded air traffic control operations?'
@@ -120,3 +120,6 @@ def test_election(election):
     assert election.Type == 'special'
     assert election.StartDate == '2022-06-14'
     assert election.EndDate == '2022-06-14'
+
+def test_ballot_style(ballot_style):
+    assert ballot_style.ExternalIdentifier[0].Value == "ballot_style_1"

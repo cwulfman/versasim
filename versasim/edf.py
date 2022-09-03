@@ -21,17 +21,6 @@ def internationalized_text(content, label='', language="en"):
 
     return data
 
-# def external_identifier(label='', type='', other_type='', value=''):
-def external_identifier(label, type, other_type, value):
-    """returns a dictionary-model of an ExternalIdentifier"""
-    data = {"@type": "ElectionResults.ExternalIdentifier",
-            "Label": label,
-            "Type": type,
-            "Value": value}
-    if other_type:
-        data['OtyerType'] = other_type
-    return data
-
 class Edf():
     def __init__(self, base, id, table, type):
         self.type = type
@@ -155,7 +144,7 @@ class Office(Edf):
                 "Name": internationalized_text(self.Name, self.Label)
                 }
         if self.ExternalIdentifier:
-            data["ExternalIdentifer"] = [external_id.as_dict() for external_id in self.ExternalIdentifier]
+            data["ExternalIdentifier"] = [external_id.as_dict() for external_id in self.ExternalIdentifier]
         return data
 
 
@@ -365,9 +354,6 @@ class BallotStyle(Edf):
         if 'Name' in self.record:
             self.name = internationalized_text(self.record['Name'])
 
-        # this is a hack; the airtable data should be fuller
-        self._external_identifier = self.record['ExternalIdentifier']
-
         if 'GpUnits' in self.record:
             self.GpUnit = self.record['GpUnits']
         self._contests = []
@@ -380,9 +366,16 @@ class BallotStyle(Edf):
                                for id in
                                self.record['BallotMeasures']]
 
+        if 'ExternalIdentifier' in self.record:
+            self._external_identifier = [ExternalIdentifier(base, id)
+                                         for id in self.record['ExternalIdentifier']]
+        else:
+            self._external_identifier = None
+
+
     @property
     def ExternalIdentifier(self):
-        pass
+        return self._external_identifier
 
     @property
     def OrderedContests(self):
@@ -392,11 +385,8 @@ class BallotStyle(Edf):
         data = {"@type": self.type,
                 "GpUnitIds": self.record['GpUnits'],
                 "OrderedContent": [c.as_dict() for c in self.OrderedContests]}
-        external_identifier = {"@type": "ElectionResults.ExternalIdentifier",
-                               "Type": "other",
-                               "OtherType": "TTV",
-                               "Value": self._external_identifier}
-        data['ExternalIdentifier']= [external_identifier]
+        if self.ExternalIdentifier:
+            data["ExternalIdentifier"] = [external_id.as_dict() for external_id in self.ExternalIdentifier]
         return data
 
 

@@ -100,4 +100,3 @@ async def get_ballotstyles():
 @app.get("/ballotstyles/{ballotstyle_id}")
 async def get_ballotstyle(ballotstyle_id):
     return edf.BallotStyle(base, ballotstyle_id).as_dict()
-
