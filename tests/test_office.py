@@ -41,8 +41,9 @@ def name(mayor):
 def potus_id():
     return  {"@type": "ElectionResults.ExternalIdentifier",
              "Type": "other",
-             "OtherType": "https://viaf.org/viaf/",
-             "Value": "https://viaf.org/viaf/129529146"}
+             "OtherType": "viaf",
+             "Value": "https://viaf.org/viaf/129529146",
+             "Label": "potus_id_viaf"}
 
 
 def test_object(mayor):
@@ -57,5 +58,6 @@ def test_dict(mayor, name):
     assert values['IsPartisan'] == True
     assert values['Name'] == name
 
+
 def test_potus(potus, potus_id):
-    assert potus.ExternalIdentifier[0].Value == potus_id['Value']
+    assert potus.ExternalIdentifier[0].as_dict() == potus_id

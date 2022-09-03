@@ -155,7 +155,7 @@ class Office(Edf):
                 "Name": internationalized_text(self.Name, self.Label)
                 }
         if self.ExternalIdentifier:
-            data["ExternalIdentifer"] = external_identifier(self.ExternalIdentifier)
+            data["ExternalIdentifer"] = [external_id.as_dict() for external_id in self.ExternalIdentifier]
         return data
 
 
