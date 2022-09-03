@@ -2,7 +2,8 @@
 
 import itertools
 from datetime import datetime
-from pyairtable import Base, Table
+from os import extsep
+from pyairtable.api import Base, Table
 
 def language_string(content, language="en"):
     """returns a dictionary-model of a LanguageString"""
@@ -71,6 +72,40 @@ class Party(Edf):
         return data
 
 
+class ExternalIdentifier(Edf):
+    def __init__(self, base, identifier):
+        super().__init__(base, identifier, 'ExternalIdentifier',
+                         'ElectionResults.ExternalIdentifier')
+
+    @property
+    def Label(self):
+        return self.record['Label']
+
+    @property
+    def Typee(self):
+        return self.record['Type']
+
+    @property
+    def OtherType(self):
+        return self.record['OtherType']
+
+    @property
+    def Value(self):
+        return self.record['Value']
+
+    def as_dict(self):
+        data = {"@type": self.type,
+                "Type": self.Typee,
+                "Value": self.Value}
+        if self.OtherType:
+            data['OtherType'] = self.OtherType
+
+        if self.Label:
+            data['Label'] = self.Label
+
+        return data
+
+
 class Office(Edf):
     def __init__(self, base, identifier):
         super().__init__(base, identifier, 'Office',
@@ -83,6 +118,16 @@ class Office(Edf):
         else:
             self.IsPartisan = False
         self._election_district = None
+
+        if 'ExternalIdentifier' in self.record:
+            self._external_identifier = [ExternalIdentifier(base, id)
+                                         for id in  self.record['ExternalIdentifier']]
+        else:
+            self._external_identifier = None
+
+    @property
+    def ExternalIdentifier(self):
+        return self._external_identifier
 
     @property
     def ElectionDistrict(self):
@@ -98,6 +143,8 @@ class Office(Edf):
                 "IsPartisan": self.IsPartisan,
                 "Name": internationalized_text(self.Name, self.Label)
                 }
+        if self.ExternalIdentifier:
+            data["ExternalIdentifier"] = [external_id.as_dict() for external_id in self.ExternalIdentifier]
         return data
 
 
@@ -307,9 +354,6 @@ class BallotStyle(Edf):
         if 'Name' in self.record:
             self.name = internationalized_text(self.record['Name'])
 
-        # this is a hack; the airtable data should be fuller
-        self._external_identifier = self.record['ExternalIdentifier']
-
         if 'GpUnits' in self.record:
             self.GpUnit = self.record['GpUnits']
         self._contests = []
@@ -322,9 +366,16 @@ class BallotStyle(Edf):
                                for id in
                                self.record['BallotMeasures']]
 
+        if 'ExternalIdentifier' in self.record:
+            self._external_identifier = [ExternalIdentifier(base, id)
+                                         for id in self.record['ExternalIdentifier']]
+        else:
+            self._external_identifier = None
+
+
     @property
     def ExternalIdentifier(self):
-        pass
+        return self._external_identifier
 
     @property
     def OrderedContests(self):
@@ -334,11 +385,8 @@ class BallotStyle(Edf):
         data = {"@type": self.type,
                 "GpUnitIds": self.record['GpUnits'],
                 "OrderedContent": [c.as_dict() for c in self.OrderedContests]}
-        external_identifier = {"@type": "ElectionResults.ExternalIdentifier",
-                               "Type": "other",
-                               "OtherType": "TTV",
-                               "Value": self._external_identifier}
-        data['ExternalIdentifier']= [external_identifier]
+        if self.ExternalIdentifier:
+            data["ExternalIdentifier"] = [external_id.as_dict() for external_id in self.ExternalIdentifier]
         return data
 
 
