@@ -291,6 +291,9 @@ class CandidateContest(Contest):
     def as_dict(self):
         data = {"@type": self.type,
                 "@id": self.id,
+                "ExternalIdentifier": [id.as_dict()
+                                       for id
+                                       in self.ExternalIdentifier],
                 "Name": self.Name,
                 "OfficeIds": self.Office,
                 "VoteVariation": self.VoteVariation,
