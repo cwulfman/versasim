@@ -235,6 +235,16 @@ class Contest(Edf):
         self._contest_selection = []
         self._election_district = None
 
+        if 'ExternalIdentifier' in self.record:
+            self._external_identifier = [ExternalIdentifier(base, id)
+                                         for id in  self.record['ExternalIdentifier']]
+        else:
+            self._external_identifier = None
+
+
+    @property
+    def ExternalIdentifier(self):
+        return self._external_identifier
 
     @property
     def VoteVariation(self):
